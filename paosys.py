@@ -1,9 +1,59 @@
 import argparse
 import openpyxl
-
+from timeit import default_timer as timer
+import random
 
 def training(excel):
-    print('this is training')
+    fast_time = 0
+    slow_time = 0
+    avg_time = 0
+    times = []
+    correct = 0
+    accuracy = 0
+    cols = ['B', 'C', 'D']
+
+    mode = input('Select a mode [pao, pa, po, ao]: ')
+
+    if mode == 'pa':
+        cols = ['B', 'C']
+    elif mode == 'po':
+        cols == ['B', 'D']
+    elif mode == 'ao':
+        cols == ['C', 'D']
+
+    print('\nDecode the number. Whitespace may be used as seperators.')
+    print('Enter q to quit\n') 
+    answer = ''
+    while(True):
+        number, correct_num = gen_num(excel, cols, mode)
+        start = timer()
+        answer = input('\n' + number + '\n')
+        if answer == 'q': break
+
+        end = timer()
+        times.append(float(format(end - start,'.2f')))
+
+        answer = ''.join(answer.split())
+        if number == encode(excel, answer, mode):
+            correct += 1
+            print('\nCorrect!\t' + 'Time: ' + str(times[-1]) + '\n\n')
+        else:
+            print('\nWrong answer. The correct number was: '+ correct_num + '\tTime: ' + str(times[-1]))
+            input('Enter to continue')
+        
+    print('\n\nFasted time: ' + str(min(times)))
+    print('Slowest time: ' + str(max(times)))
+    print('Average time: ' + str(format(sum(times) / len(times), '.2f')))
+    print('Accuracy: ' + str(format(correct / len(times) * 100, '.2f')) + '%\n')
+    
+
+
+def gen_num(excel, cols, mode):
+    num = ''
+    for i in range(random.randint(17,18)):
+        num += str(random.randint(0,9))
+    e_num = encode(excel, num, mode)
+    return e_num, num 
 
 
 def replace(excel, args):
@@ -33,12 +83,11 @@ def encode(excel, num, mode):
         if len(chunk) > 2:
             action = str(int(''.join(chunk[2:4]))+1) if len(chunk[2:4]) == 2 else str(int(chunk[2])+1)
             encoded += sheet['E' + action].value + ' ' if len(chunk[2:4]) == 1 else sheet[col2 + action].value + ' '
-            if mode != 'pao': encoded += '\n'
         if len(chunk) > 4:
             obj = str(int(''.join(chunk[4:6]))+1) if len(chunk[4:6]) == 2 else str(int(chunk[4])+1)
-            encoded += sheet['E' + obj].value + ' ' if len(chunk[4:6]) == 1 else sheet['D'+ obj].value + '\n'
+            encoded += sheet['E' + obj].value + ' ' if len(chunk[4:6]) == 1 else sheet['D'+ obj].value + ' '
 
-    print(encoded)
+    return encoded
 
 
 parser = argparse.ArgumentParser()
@@ -68,4 +117,5 @@ if args.mode == 'training':
 elif args.replace:
     replace(excel, args.replace)
 else:
-    encode(excel, args.num, args.mode)
+    encoded = encode(excel, args.num, args.mode)
+    print(encoded)
