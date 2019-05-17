@@ -5,7 +5,7 @@
 
 The [PAO (Person-Action-Object)](https://artofmemory.com/wiki/Person-Action-Object_(PAO)_System) system is a technique used to memorize long numbers. It does this by dividing the numbers into small chunks and encoding them into images. These images are then usually stored in memory using a [memory palace](https://artofmemory.com/wiki/Memory_Palace). 
 
-I had been looking for an excuse to make a command line interface for something and found this to be a nice opportunity. A while back I had created a shortened version of the PAO system using only people and objects. While I can quickly encode/decode numbers I use regularly, I find that the process is quite slow for other numbers. This program will be used to quickly encode numbers and can also be used as a testing program to keep unused numbers sharp. 
+I had been looking for an excuse to make a command line interface for something and found this to be a nice opportunity. A while back I had created a shortened version of the PAO system using only people and objects. While I can quickly encode/decode numbers I use regularly, I find that the process is quite slow for other numbers. This program will be used to quickly encode numbers and can also be used as a testing program to keep the memory of unused numbers from degrading. 
 
 I realize that this somewhat goes against the spirit of using a system like PAO since I am essentially offloading brain work for the encoding step. I personally don't use the system to improve my cognitive abilities but rather as a means to quickly access important numbers without having to look them up. Encoding is by far the slowest process for me and I don't want to have to waste brain power on it. Basically, I'm lazy.
 
@@ -20,7 +20,7 @@ Gives random word association chunks for the user to decode into the proper numb
 
 **-n 1234**
 
-The number to be encoded
+The number to be encoded. Quotations should be used if using whitespace for readability.
 
 **-m MODE**
 
@@ -46,9 +46,10 @@ Allows the user to tweak the word associated with a number. The first argument i
     visual options (2nd arg):   p: person
                                 a: action
                                 o: object
+                                odd: association for single digit (0-9) in case of number with odd amount of digits
 
 ex.     -r 12 p "Abraham Lincoln"
 
-**-h
+**-h, --help**
 
 Shows available options
