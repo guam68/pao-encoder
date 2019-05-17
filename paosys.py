@@ -14,6 +14,7 @@ def training(excel):
     slow_time = 0
     avg_time = 0
     times = []
+    correct_times = []
     correct = 0
     accuracy = 0
     cols = ['B', 'C', 'D']
@@ -26,6 +27,8 @@ def training(excel):
         cols == ['B', 'D']
     elif mode == 'ao':
         cols == ['C', 'D']
+    elif mode == 'pao':
+        cols = ['B', 'C', 'D']
     else:
         print('Not a valid training mode.')
         raise SystemExit
@@ -45,15 +48,18 @@ def training(excel):
         answer = ''.join(answer.split())
         if number == encode(excel, answer, mode):
             correct += 1
+            correct_times.append(float(format(end - start,'.2f')))
             print('\nCorrect!\t' + 'Time: ' + str(times[-1]) + '\n\n')
         else:
             print('\nWrong answer. The correct number was: '+ correct_num + '\tTime: ' + str(times[-1]))
             input('Enter to continue')
         
-    print('\n\nFasted time: ' + str(min(times)))
-    print('Slowest time: ' + str(max(times)))
-    print('Average time: ' + str(format(sum(times) / len(times), '.2f')))
-    print('Accuracy: ' + str(format(correct / len(times) * 100, '.2f')) + '%\n')
+    if times:
+        correct_times = ['None'] if correct_times == [] else correct_times
+        print('\n\nFasted correct time: ' + str(min(correct_times)))
+        print('Slowest time overall: ' + str(max(times)))
+        print('Average time to answer: ' + str(format(sum(times) / len(times), '.2f')))
+        print('Accuracy: ' + str(format(correct / len(times) * 100, '.2f')) + '%\n')
     
 
 
@@ -102,7 +108,7 @@ def encode(excel, num, mode):
         int(num)
     except ValueError:
         print('Not a valid number. Use -h to see all options\n')
-        raise SystemExit
+        return
 
     chunks = []
     num = list(num)
@@ -137,36 +143,42 @@ def encode(excel, num, mode):
     return encoded
 
 
-parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+def main():
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 
-parser.add_argument('-m', dest='mode', default='pao', help='Options: [pa, po, ao, training] (Default: pao)')
-parser.add_argument('-n', dest='num', help='The number to be encoded. Use quotations when using whitespace for readability.\n \n' +
-    'ex. -n 12345678 -or- -n "1234 5678"\n \n')
-parser.add_argument('-f', dest='file', help='Defines alternate file to pull from (Default: pao.xlsx)\n' +
-    'Supported formats: .xlsx,.xlsm,.xltx,.xltm')
-parser.add_argument('-r', nargs='*', dest='replace', help='Replaces association at assigned spot.\n \n' +
-    'Arg 1: Number to be replaced.\nArg 2: Visual to be replaced. Options: [p, a, o, odd].\nArg 3: Replacement association.' +
-    '\n \nex. -r 12 p "Abraham Lincoln"\n ')
+    parser.add_argument('-m', dest='mode', default='pao', help='Options: [pa, po, ao, training] (Default: pao)')
+    parser.add_argument('-n', dest='num', help='The number to be encoded. Use quotations when using whitespace for readability.\n \n' +
+        'ex. -n 12345678 -or- -n "1234 5678"\n \n')
+    parser.add_argument('-f', dest='file', help='Defines alternate file to pull from (Default: pao.xlsx)\n' +
+        'Supported formats: .xlsx,.xlsm,.xltx,.xltm')
+    parser.add_argument('-r', nargs='*', dest='replace', help='Replaces association at assigned spot.\n \n' +
+        'Arg 1: Number to be replaced.\nArg 2: Visual to be replaced. Options: [p, a, o, odd].\nArg 3: Replacement association.' +
+        '\n \nex. -r 12 p "Abraham Lincoln"\n ')
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-if args.file:
-    if args.file[-5:] not in ['.xlsx', '.xlsm', '.xltx', '.xltm']:
-        print('Not a supported file format. Supported formats: .xlsx,.xlsm,.xltx,.xltm\n')
+    if args.file:
+        if args.file[-5:] not in ['.xlsx', '.xlsm', '.xltx', '.xltm']:
+            print('Not a supported file format. Supported formats: .xlsx,.xlsm,.xltx,.xltm\n')
+            raise SystemExit
+            
+    try:
+        excel = openpyxl.load_workbook(args.file) if args.file else openpyxl.load_workbook('pao.xlsx')
+    except FileNotFoundError:
+        print('File not found. Make sure file is in proper directory or file path was typed correctly.\n')
         raise SystemExit
-        
-try:
-    excel = openpyxl.load_workbook(args.file) if args.file else openpyxl.load_workbook('pao.xlsx')
-except FileNotFoundError:
-    print('File not found. Make sure file is in proper directory or file path was typed correctly.\n')
-    raise SystemExit
 
-if args.mode == 'training':
-    training(excel)
-elif args.replace:
-    replace(excel, args.replace, args.file)
-elif args.num:
-    encoded = encode(excel, args.num, args.mode)
-    print(encoded + '\n')
-else:
-    print('No arguments found. Use -h to see available options.\n')
+    if args.mode == 'training':
+        training(excel)
+    elif args.replace:
+        replace(excel, args.replace, args.file)
+    elif args.num:
+        encoded = encode(excel, args.num, args.mode)
+        if encoded:
+            print(encoded + '\n')
+    else:
+        print('No arguments found. Use -h to see available options.\n')
+
+
+if __name__ == "__main__":
+    main()
